@@ -8,13 +8,17 @@ https://sprig.hackclub.com/gallery/getting_started
 @addedOn: 2025-00-00
 */
 
+/*
+  INITIALIZATION
+*/
+
 const player = "p"
 const wall = "w"
 const background = "b"
 const enemy = "l"
 
 setLegend(
-  [ player, bitmap`
+  [ player,     bitmap`
 .....0000000....
 .....0000000....
 ....000000000...
@@ -30,8 +34,8 @@ setLegend(
 ......00000.....
 ......00000.....
 ......0...0.....
-......0...0.....` ], [
-  wall, bitmap`
+......0...0.....` ],
+  [ wall,       bitmap`
 0000000000000000
 0000000000000000
 0000000000000000
@@ -47,9 +51,8 @@ setLegend(
 0000000000000000
 0000000000000000
 0000000000000000
-0000000000000000`
-  ], [
-    background, bitmap`
+0000000000000000` ],
+  [ background, bitmap`
 LLLLLLLLLLLLLLLL
 LLLLLLLLLLLLLLLL
 LLLLLLLLLLLLLLLL
@@ -65,9 +68,8 @@ LLLLLLLLLLLLLLLL
 LLLLLLLLLLLLLLLL
 LLLLLLLLLLLLLLLL
 LLLLLLLLLLLLLLLL
-LLLLLLLLLLLLLLLL`
-  ]
-  [enemy, bitmap`
+LLLLLLLLLLLLLLLL` ],
+  [ enemy,      bitmap`
 ................
 ................
 ....0000000.....
@@ -83,17 +85,18 @@ LLLLLLLLLLLLLLLL`
 ....0.000.0.....
 ....9.000.9.....
 ......0.0.......
-......0.0.......`]
+......0.0.......` ],
 )
 
-setSolids([])
-
 let level = 0
+let switchToGame = false
+
 const levels = [
+  map`.`,
   map`
 .............
 .............
-.............
+......l......
 .............
 .............
 .............
@@ -103,33 +106,62 @@ const levels = [
 .............
 .............
 .............
-.............
+...........l.
 .............
 .............`
 ]
 
 setMap(levels[level])
-
-setPushables({
-  [ player ]: []
-})
-
-onInput("s", () => {
-  getFirst(player).y += 1
-})
-onInput("w", () => {
-  getFirst(player).y -= 1
-})
-onInput("d", () => {
-  getFirst(player).x += 1
-})
-onInput("a", () => {
-  getFirst(player).x -= 1
-})
-
 setBackground(background)
 setSolids([player, wall])
 
+function setupMainMenu() {
+  addText("ESCAPE NYC", {x: 5, y: 5, color: color`2`})
+  addText("PRESS ANY KEY", {x: 4, y: 8, color: color`2`})
+  addText("TO START", {x: 6, y: 10, color: color`2`})
+}
+setupMainMenu()
+
+/*
+  INPUT HANDLING
+*/
+
+onInput("s", () => {
+  if (level == 0) return
+  getFirst(player).y += 1
+})
+
+onInput("w", () => {
+  if (level == 0) return
+  getFirst(player).y -= 1
+})
+
+onInput("d", () => {
+  if (level == 0) return
+  getFirst(player).x += 1
+})
+
+onInput("a", () => {
+  if (level == 0) return
+  getFirst(player).x -= 1
+})
+
 afterInput(() => {
-  
-})st player = "p"
+  // Switch from main menu to the first level
+  if (level == 0) {
+    clearText()
+    level += 1
+    setMap(levels[level])
+    return
+  }
+})
+
+/*
+  GAME LOOP
+*/
+
+setInterval(() => {
+  if (level === 0) {
+    
+  }
+}, 100)

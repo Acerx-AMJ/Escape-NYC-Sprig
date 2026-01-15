@@ -130,9 +130,12 @@ const levels = [
 .............`
 ]
 
+let collectedCoins = 0,
+    maximumCoins   = 0;
+
 setMap(levels[level])
 setBackground(background)
-setSolids([player, wall, coin])
+setSolids([player, wall])
 
 // Start the game with the main menu which simply
 // contains hard-coded text.
@@ -142,6 +145,29 @@ function setupMainMenu() {
   addText("TO START", {x: 6, y: 10, color: color`2`})
 }
 setupMainMenu()
+
+// Setup the necessary variables for a new level.
+// Call whenever levels get switched
+function initGameLevel() {
+  collectedCoins = 0
+  
+  // Count the coint count in the map. I don't
+  // know JS. What the fuck is this syntax??
+  maximumCoins = 0
+  for (a in levels[level]) {
+    if (levels[level][a] == coin) maximumCoins += 1
+  }
+  
+  setMap(levels[level])
+  drawGameText()
+}
+
+// Draw game UI like the coin counter
+function drawGameText() {
+  // Clear existing text first
+  clearText();
+  addText("COINS: " + collectedCoins + "/" + maximumCoins, {x: 3, y: 0, color: color`2`})
+}
 
 /*
   INPUT HANDLING
@@ -189,10 +215,21 @@ afterInput(() => {
   // Switch from main menu to the first level
   // (a key has been pressed)
   if (level == 0) {
-    clearText()
     level += 1
-    setMap(levels[level])
+    initGameLevel()
     return
+  }
+
+  // Handle colleting coins. increment the coin
+  // counter and delete the tile
+  const { y: y, x : x } = getFirst(player);
+  
+  // What the fuck even is JS??
+  if (getTile(x, y).some(({type}) => type === coin)) {
+    clearTile(x, y)
+    addSprite(x, y, player) // Place player back
+    collectedCoins += 1
+    drawGameText()
   }
 })
 

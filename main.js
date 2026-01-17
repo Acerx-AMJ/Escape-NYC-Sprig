@@ -8,7 +8,6 @@
 /*
   KEYBINDS
   w, a, s, d - move
-  i - reset level
 */
 
 /*
@@ -127,7 +126,14 @@ const levels = [
 .............
 ...........l.
 .............
-.............`
+.............`,
+  map`
+p....c
+.wwww.
+.cwc..
+.cwc..
+.cwc..
+c.l..c`,
 ]
 
 let collectedCoins  = 0,
@@ -151,13 +157,37 @@ function setupMainMenu() {
 }
 setupMainMenu()
 
-// Draw the same hard-coded text when the player
-// looses.
-function setupLoseScreen() {
+// Setup the transition between levels
+function setupTransition() {
+  // Too lazy to rename variables. Basically do not
+  // switch levels on key press
+  playerHasDied = true
+  setMap(levels[0])
+  
+  setTimeout(() => {
+    playerHasDied = false
+    level += 1
+    initGameLevel()
+  }, 2000)
+  
   clearText()
-  addText("YOU DIED!", {x: 6, y: 5, color: color`2`})
+  addText("LEVEL BEAT!", {x: 5, y: 6, color: color`2`})
+  addText("NEXT LEVEL " + (level + 1), {x: 4, y: 9, color: color`2`})
+}
+
+// Setup the win screen
+function setupWinScreen() {
+  playerHasDied = true
+  canRetryOnDeath = false
+  setTimeout(() => {canRetryOnDeath = true}, 500)
+  
+  level = 0
+  setMap(levels[level])
+  
+  clearText()
+  addText("YOU WON!", {x: 6, y: 5, color: color`2`})
   addText("PRESS ANY KEY", {x: 4, y: 8, color: color`2`})
-  addText("TO RETRY", {x: 6, y: 10, color: color`2`})
+  addText("TO PLAY AGAIN", {x: 4, y: 10, color: color`2`})
 }
 
 // Setup the necessary variables for a new level.
@@ -182,10 +212,13 @@ function killPlayer() {
   canRetryOnDeath = false
   setTimeout(() => {canRetryOnDeath = true}, 500)
   
-  getFirst(player).remove()
   level = 0
   setMap(levels[level])
-  setupLoseScreen()
+  
+  clearText()
+  addText("YOU DIED!", {x: 6, y: 5, color: color`2`})
+  addText("PRESS ANY KEY", {x: 4, y: 8, color: color`2`})
+  addText("TO RETRY", {x: 6, y: 10, color: color`2`})
 }
 
 // Check if an enemy can walk on a tile
@@ -193,52 +226,55 @@ function isEmpty(x, y) {
   return !getTile(x, y).some((tile) => tile.type === wall || tile.type === enemy)
 }
 
+// Check if the game is running
+function isGame() {
+  return level !== 0 && !playerHasDied
+}
+
 /*
   INPUT HANDLING
 */
 
 onInput("s", () => {
-  if (level == 0) return
+  if (!isGame()) return
   getFirst(player).y += 1
 })
 
 onInput("w", () => {
-  if (level == 0) return
+  if (!isGame()) return
   getFirst(player).y -= 1
 })
 
 onInput("d", () => {
-  if (level == 0) return
+  if (!isGame()) return
   getFirst(player).x += 1
 })
 
 onInput("a", () => {
-  if (level == 0) return
+  if (!isGame()) return
   getFirst(player).x -= 1
 })
 
-// Reset the level unless in the main menu
 onInput("i", () => {
-  if (level == 0) return
-  setMap(levels[level])
+  if (!isGame()) return
 })
 
 onInput("j", () => {
-  if (level == 0) return
+  if (!isGame()) return
 })
 
 onInput("k", () => {
-  if (level == 0) return
+  if (!isGame()) return
 })
 
 onInput("l", () => {
-  if (level == 0) return
+  if (!isGame()) return
 })
 
 afterInput(() => {
   // Switch from main menu to the first level
   // (a key has been pressed)
-  if (level == 0) {
+  if (level === 0) {
     // Small timeout in case they accidentally press
     // a button.
     if (playerHasDied && !canRetryOnDeath) return
@@ -248,6 +284,8 @@ afterInput(() => {
     initGameLevel()
     return
   }
+
+  if (!isGame()) return
 
   // Handle colleting coins. increment the coin
   // counter and delete the tile
@@ -263,10 +301,19 @@ afterInput(() => {
   // Handle dying. Switch to the 'main menu' and
   // start the game from the beginning. The player
   // stepped on an enemy. What a dumbass.
-  const enemyTile = getTile(x, y).find((tile) => tile.type === enemy)
-
-  if (enemyTile) {
+  if (getTile(x, y).some((tile) => tile.type === enemy)) {
     killPlayer()
+  }
+
+  // Switch levels ONLY if the player didn't die the
+  // same frame. I don't think we need a dead player
+  // here
+  if (collectedCoins === maximumCoins) {
+    if (level + 1 === levels.length) {
+      setupWinScreen()
+    } else {
+      setupTransition()
+    }
   }
 })
 
@@ -275,7 +322,7 @@ afterInput(() => {
 */
 
 setInterval(() => {
-  if (level == 0) return
+  if (!isGame()) return
   const { y: y, x: x } = getFirst(player)
 
   // Handle moving enemies to the player

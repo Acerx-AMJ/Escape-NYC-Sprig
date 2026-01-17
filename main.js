@@ -1,24 +1,53 @@
 /*
 @title: Escape NYC
-@author: 
+@author:
 @tags: []
 @addedOn: 2025-00-00
 */
 
-/*
-  KEYBINDS
-  w, a, s, d - move
-*/
-
-/*
-  INITIALIZATION
-*/
+// All times here are in milliseconds
+const TRANSITION_DURATION = 2000,
+      TITLE_INPUT_DELAY   = 500,
+      ENEMY_UPDATE_SPEED  = 1000;
 
 const player     = "p",
       wall       = "w",
       background = "b",
       enemy      = "l",
       coin       = "c";
+
+let level = 0
+const levels = [
+  map`.`,
+  map`
+.............
+.............
+..c...l......
+.............
+.............
+.............
+.........cc..
+....pw...cc..
+.....w.......
+.............
+.............
+.............
+...........l.
+.............
+.............`,
+  map`
+p....c
+.wwww.
+.cwc..
+.cwc..
+.cwc..
+c.l..c`,
+]
+
+let collectedCoins  = 0,
+    maximumCoins    = 0,
+    canRetryOnDeath = false,
+    playerHasDied   = false;
 
 setLegend(
   [ player,     bitmap`
@@ -108,39 +137,6 @@ LLLLLLLLLLLLLLLL` ],
 ......0000......` ],
 )
 
-let level = 0
-const levels = [
-  map`.`,
-  map`
-.............
-.............
-..c...l......
-.............
-.............
-.............
-.........cc..
-....pw...cc..
-.....w.......
-.............
-.............
-.............
-...........l.
-.............
-.............`,
-  map`
-p....c
-.wwww.
-.cwc..
-.cwc..
-.cwc..
-c.l..c`,
-]
-
-let collectedCoins  = 0,
-    maximumCoins    = 0,
-    canRetryOnDeath = false,
-    playerHasDied   = false;
-
 setMap(levels[level])
 setBackground(background)
 
@@ -168,7 +164,7 @@ function setupTransition() {
     playerHasDied = false
     level += 1
     initGameLevel()
-  }, 2000)
+  }, TRANSITION_DURATION)
   
   clearText()
   addText("LEVEL BEAT!", {x: 5, y: 6, color: color`2`})
@@ -179,7 +175,7 @@ function setupTransition() {
 function setupWinScreen() {
   playerHasDied = true
   canRetryOnDeath = false
-  setTimeout(() => {canRetryOnDeath = true}, 500)
+  setTimeout(() => {canRetryOnDeath = true}, TITLE_INPUT_DELAY)
   
   level = 0
   setMap(levels[level])
@@ -210,7 +206,7 @@ function drawGameText() {
 function killPlayer() {
   playerHasDied = true
   canRetryOnDeath = false
-  setTimeout(() => {canRetryOnDeath = true}, 500)
+  setTimeout(() => {canRetryOnDeath = true}, TITLE_INPUT_DELAY)
   
   level = 0
   setMap(levels[level])
@@ -223,7 +219,7 @@ function killPlayer() {
 
 // Check if an enemy can walk on a tile
 function isEmpty(x, y) {
-  return !getTile(x, y).some((tile) => tile.type === wall || tile.type === enemy)
+  return !getTile(x, y).some(({type}) => type === wall || type === enemy)
 }
 
 // Check if the game is running
@@ -231,44 +227,20 @@ function isGame() {
   return level !== 0 && !playerHasDied
 }
 
-/*
-  INPUT HANDLING
-*/
-
 onInput("s", () => {
-  if (!isGame()) return
-  getFirst(player).y += 1
+  if (isGame()) getFirst(player).y += 1
 })
 
 onInput("w", () => {
-  if (!isGame()) return
-  getFirst(player).y -= 1
+  if (isGame()) getFirst(player).y -= 1
 })
 
 onInput("d", () => {
-  if (!isGame()) return
-  getFirst(player).x += 1
+  if (isGame()) getFirst(player).x += 1
 })
 
 onInput("a", () => {
-  if (!isGame()) return
-  getFirst(player).x -= 1
-})
-
-onInput("i", () => {
-  if (!isGame()) return
-})
-
-onInput("j", () => {
-  if (!isGame()) return
-})
-
-onInput("k", () => {
-  if (!isGame()) return
-})
-
-onInput("l", () => {
-  if (!isGame()) return
+  if (isGame()) getFirst(player).x -= 1
 })
 
 afterInput(() => {
@@ -290,7 +262,7 @@ afterInput(() => {
   // Handle colleting coins. increment the coin
   // counter and delete the tile
   const { y: y, x: x } = getFirst(player)
-  const coinTile = getTile(x, y).find((tile) => tile.type === coin)
+  const coinTile = getTile(x, y).find(({type}) => type === coin)
   
   if (coinTile) {
     coinTile.remove()
@@ -301,7 +273,7 @@ afterInput(() => {
   // Handle dying. Switch to the 'main menu' and
   // start the game from the beginning. The player
   // stepped on an enemy. What a dumbass.
-  if (getTile(x, y).some((tile) => tile.type === enemy)) {
+  if (getTile(x, y).some(({type}) => type === enemy)) {
     killPlayer()
   }
 
@@ -316,10 +288,6 @@ afterInput(() => {
     }
   }
 })
-
-/*
-  GAME LOOP
-*/
 
 setInterval(() => {
   if (!isGame()) return
@@ -339,4 +307,4 @@ setInterval(() => {
       killPlayer()
     }
   });
-}, 1000)
+}, ENEMY_UPDATE_SPEED)

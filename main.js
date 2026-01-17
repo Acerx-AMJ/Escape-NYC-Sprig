@@ -188,6 +188,11 @@ function killPlayer() {
   setupLoseScreen()
 }
 
+// Check if an enemy can walk on a tile
+function isEmpty(x, y) {
+  return !getTile(x, y).some((tile) => tile.type === wall || tile.type === enemy)
+}
+
 /*
   INPUT HANDLING
 */
@@ -273,25 +278,17 @@ setInterval(() => {
   if (level == 0) return
   const { y: y, x: x } = getFirst(player)
 
+  // Handle moving enemies to the player
   getAll(enemy).map(function (e) {
-    // Handle moving enemies to the player
-    let ny = e.y,
-        nx = e.x;
-    
-    if (e.y < y) ny += 1
-    if (e.y > y) ny -= 1
-    if (e.x < x) nx += 1
-    if (e.x > x) nx -= 1
-
     // Manual collision because the engine is really
     // limiting. I guess that's a good thing?
-    if (!getTile(nx, ny).some((tile) => tile.type === wall || tile.type === enemy)) {
-      e.x = nx
-      e.y = ny
-    }
+    if (e.y < y && isEmpty(e.x, e.y + 1)) e.y += 1
+    if (e.y > y && isEmpty(e.x, e.y - 1)) e.y -= 1
+    if (e.x < x && isEmpty(e.x + 1, e.y)) e.x += 1
+    if (e.x > x && isEmpty(e.x - 1, e.y)) e.x -= 1
     
     // Enemy stepped on the player
-    if (y == ny && x == nx) {
+    if (y == e.y && x == e.x) {
       killPlayer()
     }
   });

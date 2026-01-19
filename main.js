@@ -14,6 +14,8 @@ const player     = "p",
       wall       = "w",
       background = "b",
       enemy      = "l",
+      enemy2     = "2",
+      enemy3     = "3",
       coin       = "c",
       box        = "x",
       smallBox   = "s";
@@ -21,6 +23,15 @@ const player     = "p",
 let level = 0
 const levels = [
   map`.`,
+  map`
+......3.
+.p......
+..2.w...
+...ww...
+...w....
+...w...c
+...w.lcc
+.....ccc`,
   map`
 .............
 .............
@@ -120,6 +131,40 @@ LLLLLLLLLLLLLLLL` ],
 3333333333333333
 3333333333333333
 3333333333333333` ],
+  [ enemy2,     bitmap`
+.....333333.....
+.....333333.....
+.....333333.....
+.....333333.....
+.....333333.....
+.....333333.....
+.....333333.....
+.....333333.....
+.....333333.....
+.....333333.....
+.....333333.....
+.....333333.....
+.....333333.....
+.....333333.....
+.....333333.....
+.....333333.....` ],
+  [ enemy3,     bitmap`
+................
+................
+................
+................
+................
+3333333333333333
+3333333333333333
+3333333333333333
+3333333333333333
+3333333333333333
+3333333333333333
+................
+................
+................
+................
+................` ],
   [ coin,       bitmap`
 ......0000......
 ....00222200....
@@ -177,10 +222,14 @@ setMap(levels[level])
 setBackground(background)
 
 // Set collisions
-setSolids([player, enemy, wall, box, smallBox])
+setSolids([player, enemy, enemy2, enemy3, wall,
+           box, smallBox])
+
 setPushables({
   [player]: [box, smallBox],
   [enemy]: [smallBox],
+  [enemy2]: [smallBox],
+  [enemy3]: [smallBox],
 })
 
 // Start the game with the main menu which simply
@@ -262,6 +311,10 @@ function isEmpty(x, y) {
   return !getTile(x, y).some(({type}) => type === wall || type === enemy || type === box)
 }
 
+function isEnemy(x, y) {
+  return getTile(x, y).some(({type}) => type === enemy || type === enemy2 || type === enemy3)
+}
+
 // Check if the game is running
 function isGame() {
   return level !== 0 && !playerHasDied
@@ -273,7 +326,7 @@ function isGame() {
 onInput("s", () => {
   if (!isGame()) return
   const { y: y, x: x} = getFirst(player)
-  if (getTile(x, y + 1).some(({type}) => type === enemy)) {
+  if (isEnemy(x, y + 1)) {
     killPlayer()
     return
   }
@@ -283,7 +336,7 @@ onInput("s", () => {
 onInput("w", () => {
   if (!isGame()) return
   const { y: y, x: x} = getFirst(player)
-  if (getTile(x, y - 1).some(({type}) => type === enemy)) {
+  if (isEnemy(x, y - 1)) {
     killPlayer()
     return
   }
@@ -293,7 +346,7 @@ onInput("w", () => {
 onInput("d", () => {
   if (!isGame()) return
   const { y: y, x: x} = getFirst(player)
-  if (getTile(x + 1, y).some(({type}) => type === enemy)) {
+  if (isEnemy(x + 1, y)) {
     killPlayer()
     return
   }
@@ -303,7 +356,7 @@ onInput("d", () => {
 onInput("a", () => {
   if (!isGame()) return
   const { y: y, x: x} = getFirst(player)
-  if (getTile(x - 1, y).some(({type}) => type === enemy)) {
+  if (isEnemy(x - 1, y)) {
     killPlayer()
     return
   }
@@ -368,5 +421,29 @@ setInterval(() => {
     }
     e.y = ny
     e.x = nx
-  });
+  })
+
+  // Handle vertical enemies
+  getAll(enemy2).map(function (e) {
+    let ny = e.y
+    if (e.y < y) ny += 1
+    if (e.y > y) ny -= 1
+
+    if (y == ny && x == e.x) {
+      killPlayer()
+    }
+    e.y = ny
+  })
+
+  // Handle horizontal enemies
+  getAll(enemy3).map(function (e) {
+    let nx = e.x
+    if (e.x < x) nx += 1
+    if (e.x > x) nx -= 1
+
+    if (y == e.y && x == nx) {
+      killPlayer()
+    }
+    e.x = nx
+  })
 }, ENEMY_UPDATE_SPEED)

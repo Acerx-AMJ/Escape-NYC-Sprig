@@ -15,7 +15,8 @@ const player     = "p",
       background = "b",
       enemy      = "l",
       coin       = "c",
-      box        = "x";
+      box        = "x",
+      smallBox   = "s";
 
 let level = 0
 const levels = [
@@ -30,9 +31,9 @@ const levels = [
 .........cc..
 ....pw...cc..
 .....w.......
-.............
-.............
-.............
+........s....
+........s....
+........s....
 ...........l.
 .............
 .............`,
@@ -153,14 +154,34 @@ CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC` ],
+  [ smallBox,   bitmap`
+9999999999999999
+9999999999999999
+9999999999999999
+9999999999999999
+9999999999999999
+9999999999999999
+9999999999999999
+9999999999999999
+9999999999999999
+9999999999999999
+9999999999999999
+9999999999999999
+9999999999999999
+9999999999999999
+9999999999999999
+9999999999999999` ],
 )
 
 setMap(levels[level])
 setBackground(background)
 
 // Set collisions
-setSolids([player, enemy, wall, box])
-setPushables({[player]: [box]})
+setSolids([player, enemy, wall, box, smallBox])
+setPushables({
+  [player]: [box, smallBox],
+  [enemy]: [smallBox],
+})
 
 // Start the game with the main menu which simply
 // contains hard-coded text.

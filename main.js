@@ -14,7 +14,8 @@ const player     = "p",
       wall       = "w",
       background = "b",
       enemy      = "l",
-      coin       = "c";
+      coin       = "c",
+      box        = "x";
 
 let level = 0
 const levels = [
@@ -25,7 +26,7 @@ const levels = [
 ..c...l......
 .............
 .............
-.............
+...xxxx......
 .........cc..
 ....pw...cc..
 .....w.......
@@ -135,13 +136,31 @@ LLLLLLLLLLLLLLLL` ],
 ...0FFF666660...
 ....00FFFF00....
 ......0000......` ],
+  [ box,        bitmap`
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCC` ],
 )
 
 setMap(levels[level])
 setBackground(background)
 
 // Set collisions
-setSolids([player, wall])
+setSolids([player, enemy, wall, box])
+setPushables({[player]: [box]})
 
 // Start the game with the main menu which simply
 // contains hard-coded text.
@@ -219,7 +238,7 @@ function killPlayer() {
 
 // Check if an enemy can walk on a tile
 function isEmpty(x, y) {
-  return !getTile(x, y).some(({type}) => type === wall || type === enemy)
+  return !getTile(x, y).some(({type}) => type === wall || type === enemy || type === box)
 }
 
 // Check if the game is running
@@ -227,20 +246,47 @@ function isGame() {
   return level !== 0 && !playerHasDied
 }
 
+// Gotta do what you gotta do. Collision API is too
+// primitive, so we have to check enemy collision
+// manually.
 onInput("s", () => {
-  if (isGame()) getFirst(player).y += 1
+  if (!isGame()) return
+  const { y: y, x: x} = getFirst(player)
+  if (getTile(x, y + 1).some(({type}) => type === enemy)) {
+    killPlayer()
+    return
+  }
+  getFirst(player).y += 1
 })
 
 onInput("w", () => {
-  if (isGame()) getFirst(player).y -= 1
+  if (!isGame()) return
+  const { y: y, x: x} = getFirst(player)
+  if (getTile(x, y - 1).some(({type}) => type === enemy)) {
+    killPlayer()
+    return
+  }
+  getFirst(player).y -= 1
 })
 
 onInput("d", () => {
-  if (isGame()) getFirst(player).x += 1
+  if (!isGame()) return
+  const { y: y, x: x} = getFirst(player)
+  if (getTile(x + 1, y).some(({type}) => type === enemy)) {
+    killPlayer()
+    return
+  }
+  getFirst(player).x += 1
 })
 
 onInput("a", () => {
-  if (isGame()) getFirst(player).x -= 1
+  if (!isGame()) return
+  const { y: y, x: x} = getFirst(player)
+  if (getTile(x - 1, y).some(({type}) => type === enemy)) {
+    killPlayer()
+    return
+  }
+  getFirst(player).x -= 1
 })
 
 afterInput(() => {
@@ -270,13 +316,6 @@ afterInput(() => {
     drawGameText()
   }
 
-  // Handle dying. Switch to the 'main menu' and
-  // start the game from the beginning. The player
-  // stepped on an enemy. What a dumbass.
-  if (getTile(x, y).some(({type}) => type === enemy)) {
-    killPlayer()
-  }
-
   // Switch levels ONLY if the player didn't die the
   // same frame. I don't think we need a dead player
   // here
@@ -295,16 +334,18 @@ setInterval(() => {
 
   // Handle moving enemies to the player
   getAll(enemy).map(function (e) {
-    // Manual collision because the engine is really
-    // limiting. I guess that's a good thing?
-    if (e.y < y && isEmpty(e.x, e.y + 1)) e.y += 1
-    if (e.y > y && isEmpty(e.x, e.y - 1)) e.y -= 1
-    if (e.x < x && isEmpty(e.x + 1, e.y)) e.x += 1
-    if (e.x > x && isEmpty(e.x - 1, e.y)) e.x -= 1
-    
-    // Enemy stepped on the player
-    if (y == e.y && x == e.x) {
+    let ny = e.y,
+        nx = e.x;
+
+    if (e.y < y) ny += 1
+    if (e.y > y) ny -= 1
+    if (e.x < x) nx += 1
+    if (e.x > x) nx -= 1
+
+    if (y == ny && x == nx) {
       killPlayer()
     }
+    e.y = ny
+    e.x = nx
   });
 }, ENEMY_UPDATE_SPEED)

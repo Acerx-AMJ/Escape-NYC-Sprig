@@ -24,15 +24,17 @@ let level = 0
 const levels = [
   map`.`,
   map`
+wwwwwwwwww
+wwwww.....
 wccccc....
-wwwxxxx3..
+wwwxxxs3..
 c.p.......
 c..2.w....
 c...ww..c.
-c...w.....
+c...w..ss.
 ..c.w...c.
 ..3.w.lcc.
-..xxxxccc.
+..xsxxccc.
 2.........`,
   map`
 ..w..............

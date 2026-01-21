@@ -24,6 +24,50 @@ let level = 0
 const levels = [
   map`.`,
   map`
+.......cx..
+.p..c..cx..
+........wc.
+xxwwww..wc.
+........wc.
+..ww....wc.
+.ccw..c.wc.
+.ccw....wc.`,
+  map`
+c......cs..
+.px.c..cs..
+c.......wc.
+xxwwww..wcs
+.....ss.wc.
+..ww.ls.wc.
+.ccwc.c.wc.
+.ccwc...wc.`,
+  map`
+.......cx..
+.p..c..cx..
+........wc.
+xxwwww2.wc.
+........wc.
+..ww....wc.
+.ccw.3c.wc.
+.ccw....wc.`,
+  map`
+ls......x...x......c.
+scs......xpx.........
+cs.......x.x....c....
+....ssxxxxxxxxxxxss..
+..c.s3.c..x...c.3.s..
+..........c..........
+..................2..
+..........2..........
+.................ww..
+.c...sssxx.xxsss.wc..
+.........www.....wwxx
+ww.3.c...wcw.c..3w...
+.....................
+ss.c.x............2ss
+.s...x.............sc
+2s.c......2........sl`,
+  map`
 cc...s.sc.......c
 cc...slxcc....c..
 cc.wwwwwwwwwwwxxx
@@ -332,10 +376,6 @@ function killPlayer() {
 }
 
 // Check if an enemy can walk on a tile
-function isEmpty(x, y) {
-  return !getTile(x, y).some(({type}) => type === wall || type === enemy || type === box)
-}
-
 function isEnemy(x, y) {
   return getTile(x, y).some(({type}) => type === enemy || type === enemy2 || type === enemy3)
 }
@@ -441,11 +481,11 @@ setInterval(() => {
     if (e.x < x) nx += 1
     if (e.x > x) nx -= 1
 
-    if (y == ny && x == nx) {
-      killPlayer()
-    }
     e.y = ny
     e.x = nx
+    if (y == e.y && x == e.x) {
+      killPlayer()
+    }
   })
 
   // Handle vertical enemies
@@ -454,10 +494,10 @@ setInterval(() => {
     if (e.y < y) ny += 1
     if (e.y > y) ny -= 1
 
-    if (y == ny && x == e.x) {
+    e.y = ny
+    if (y == e.y && x == e.x) {
       killPlayer()
     }
-    e.y = ny
   })
 
   // Handle horizontal enemies
@@ -466,9 +506,9 @@ setInterval(() => {
     if (e.x < x) nx += 1
     if (e.x > x) nx -= 1
 
-    if (y == e.y && x == nx) {
+    e.x = nx
+    if (y == e.y && x == e.x) {
       killPlayer()
     }
-    e.x = nx
   })
 }, ENEMY_UPDATE_SPEED)

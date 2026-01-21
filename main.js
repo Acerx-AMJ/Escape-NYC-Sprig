@@ -16,6 +16,7 @@ const player     = "p",
       enemy      = "l",
       enemy2     = "2",
       enemy3     = "3",
+      enemy4     = "4",
       coin       = "c",
       box        = "x",
       smallBox   = "s";
@@ -234,6 +235,23 @@ LLLLLLLLLLLLLLLL` ],
 ................
 ................
 ................` ],
+  [ enemy4,     bitmap`
+.......33.......
+.......33.......
+......3333......
+......3333......
+.....338833.....
+.....338833.....
+....33888833....
+....33888833....
+...3388888833...
+...3388888833...
+..338888888833..
+..338888888833..
+.33888888888833.
+.33888888888833.
+3333333333333333
+3333333333333333` ],
   [ coin,       bitmap`
 ......0000......
 ....00222200....
@@ -291,14 +309,15 @@ setMap(levels[level])
 setBackground(background)
 
 // Set collisions
-setSolids([player, enemy, enemy2, enemy3, wall,
-           box, smallBox])
+setSolids([player, enemy, enemy2, enemy3, enemy4,
+           wall, box, smallBox])
 
 setPushables({
   [player]: [box, smallBox],
   [enemy]: [smallBox],
   [enemy2]: [smallBox],
   [enemy3]: [smallBox],
+  [enemy4]: [smallBox],
 })
 
 // Start the game with the main menu which simply
@@ -377,7 +396,7 @@ function killPlayer() {
 
 // Check if an enemy can walk on a tile
 function isEnemy(x, y) {
-  return getTile(x, y).some(({type}) => type === enemy || type === enemy2 || type === enemy3)
+  return getTile(x, y).some(({type}) => type === enemy || type === enemy2 || type === enemy3 || type === enemy4)
 }
 
 // Check if the game is running
@@ -473,8 +492,7 @@ setInterval(() => {
 
   // Handle moving enemies to the player
   getAll(enemy).map(function (e) {
-    let ny = e.y,
-        nx = e.x;
+    let ny = e.y, nx = e.x;
 
     if (e.y < y) ny += 1
     if (e.y > y) ny -= 1
@@ -512,3 +530,27 @@ setInterval(() => {
     }
   })
 }, ENEMY_UPDATE_SPEED)
+
+// Update these enemies 2x faster
+setInterval(() => {
+  if (!isGame()) return
+  const { y: y, x: x } = getFirst(player)
+
+  // Update triangle enemies
+  getAll(enemy4).map(function (e) {
+    let ny = e.y, nx = e.x;
+    const distance = Math.max(Math.abs(e.x - x), Math.abs(e.y - y));
+
+    if (distance >= 5) return
+    if (e.y < y) ny += 1
+    if (e.y > y) ny -= 1
+    if (e.x < x) nx += 1
+    if (e.x > x) nx -= 1
+
+    e.y = ny
+    e.x = nx
+    if (y == e.y && x == e.x) {
+      killPlayer()
+    }
+  })
+}, ENEMY_UPDATE_SPEED / 2)

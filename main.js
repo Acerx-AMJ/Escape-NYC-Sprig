@@ -10,16 +10,22 @@ const TRANSITION_DURATION = 2000,
       TITLE_INPUT_DELAY   = 500,
       ENEMY_UPDATE_SPEED  = 1000;
 
-const player     = "p",
-      wall       = "w",
-      background = "b",
-      enemy      = "l",
-      enemy2     = "2",
-      enemy3     = "3",
-      enemy4     = "4",
-      coin       = "c",
-      box        = "x",
-      smallBox   = "s";
+const player      = "p",
+      wall        = "w",
+      background  = "b",
+      enemy       = "l",
+      enemy2      = "2",
+      enemy3      = "3",
+      enemy4      = "4",
+      coin        = "c",
+      box         = "x",
+      smallBox    = "s",
+      buttonblue  = "[",
+      switchblue  = "]",
+      buttonred   = "{",
+      switchred   = "}",
+      buttongreen = "(",
+      switchgreen = ")";
 
 let level = 0
 const levels = [
@@ -133,7 +139,7 @@ let collectedCoins  = 0,
     playerHasDied   = false;
 
 setLegend(
-  [ player,     bitmap`
+  [ player,      bitmap`
 5555555555555555
 5555555555555555
 5577777777777755
@@ -150,7 +156,7 @@ setLegend(
 5577777777777755
 5555555555555555
 5555555555555555` ],
-  [ wall,       bitmap`
+  [ wall,        bitmap`
 0000000000000000
 0999999909999999
 0999999909999999
@@ -167,7 +173,7 @@ setLegend(
 9990999999909999
 9990999999909999
 9990999999909999` ],
-  [ background, bitmap`
+  [ background,  bitmap`
 LLLLLLLLLLLLLLLL
 LLLLLLLLLLLLLLLL
 LLLLLLLLLLLLLLLL
@@ -184,7 +190,7 @@ LLLLLLLLLLLLLLLL
 LLLLLLLLLLLLLLLL
 LLLLLLLLLLLLLLLL
 LLLLLLLLLLLLLLLL` ],
-  [ enemy,      bitmap`
+  [ enemy,       bitmap`
 3333333333333333
 3333333333333333
 3388888888888833
@@ -201,7 +207,7 @@ LLLLLLLLLLLLLLLL` ],
 3388888888888833
 3333333333333333
 3333333333333333` ],
-  [ enemy2,     bitmap`
+  [ enemy2,      bitmap`
 .....333333.....
 .....333333.....
 .....338833.....
@@ -218,7 +224,7 @@ LLLLLLLLLLLLLLLL` ],
 .....338833.....
 .....333333.....
 .....333333.....` ],
-  [ enemy3,     bitmap`
+  [ enemy3,      bitmap`
 ................
 ................
 ................
@@ -235,7 +241,7 @@ LLLLLLLLLLLLLLLL` ],
 ................
 ................
 ................` ],
-  [ enemy4,     bitmap`
+  [ enemy4,      bitmap`
 .......33.......
 .......33.......
 ......3333......
@@ -252,7 +258,7 @@ LLLLLLLLLLLLLLLL` ],
 .33888888888833.
 3333333333333333
 3333333333333333` ],
-  [ coin,       bitmap`
+  [ coin,        bitmap`
 ......0000......
 ....00222200....
 ...0666622220...
@@ -269,7 +275,7 @@ LLLLLLLLLLLLLLLL` ],
 ...0FFF666660...
 ....00FFFF00....
 ......0000......` ],
-  [ box,        bitmap`
+  [ box,         bitmap`
 CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC
 CCCC99999999CCCC
@@ -286,7 +292,7 @@ CCCCC999999CCCCC
 CCCC99999999CCCC
 CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC` ],
-  [ smallBox,   bitmap`
+  [ smallBox,    bitmap`
 CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC
 CC999999999999CC
@@ -303,6 +309,108 @@ CC999999999999CC
 CC999999999999CC
 CCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCC` ],
+  [ buttonblue,  bitmap`
+....00000000....
+..00LLLLLLLL00..
+.0LLLLLLLLLLLL0.
+.0LL77777777LL0.
+0LL7755555577LL0
+0LL7555555557LL0
+0LL7555555557LL0
+0LL7555555557LL0
+0LL7555555557LL0
+0LL7555555557LL0
+0LL7555555557LL0
+0LL7755555577LL0
+.0LL77777777LL0.
+.0LLLLLLLLLLLL0.
+..00LLLLLLLL00..
+....00000000....` ],
+  [ switchblue,  bitmap`
+0000000000000000
+0LLLLLLLLLLLLLL0
+0LLLLLLLLLLLLLL0
+0LL7777777777LL0
+0LL7555555557LL0
+0LL7555555557LL0
+0LL7555555557LL0
+0LL7555555557LL0
+0LL7555555557LL0
+0LL7555555557LL0
+0LL7555555557LL0
+0LL7555555557LL0
+0LL7777777777LL0
+0LLLLLLLLLLLLLL0
+0LLLLLLLLLLLLLL0
+0000000000000000` ],
+  [ buttonred,   bitmap`
+....00000000....
+..00LLLLLLLL00..
+.0LLLLLLLLLLLL0.
+.0LL88888888LL0.
+0LL8833333388LL0
+0LL8333333338LL0
+0LL8333333338LL0
+0LL8333333338LL0
+0LL8333333338LL0
+0LL8333333338LL0
+0LL8333333338LL0
+0LL8833333388LL0
+.0LL88888888LL0.
+.0LLLLLLLLLLLL0.
+..00LLLLLLLL00..
+....00000000....` ],
+  [ switchred,   bitmap`
+0000000000000000
+0LLLLLLLLLLLLLL0
+0LLLLLLLLLLLLLL0
+0LL8888888888LL0
+0LL8333333338LL0
+0LL8333333338LL0
+0LL8333333338LL0
+0LL8333333338LL0
+0LL8333333338LL0
+0LL8333333338LL0
+0LL8333333338LL0
+0LL8333333338LL0
+0LL8888888888LL0
+0LLLLLLLLLLLLLL0
+0LLLLLLLLLLLLLL0
+0000000000000000` ],
+  [ buttongreen, bitmap`
+....00000000....
+..00LLLLLLLL00..
+.0LLLLLLLLLLLL0.
+.0LL44444444LL0.
+0LL44DDDDDD44LL0
+0LL4DDDDDDDD4LL0
+0LL4DDDDDDDD4LL0
+0LL4DDDDDDDD4LL0
+0LL4DDDDDDDD4LL0
+0LL4DDDDDDDD4LL0
+0LL4DDDDDDDD4LL0
+0LL44DDDDDD44LL0
+.0LL44444444LL0.
+.0LLLLLLLLLLLL0.
+..00LLLLLLLL00..
+....00000000....` ],
+  [ switchgreen, bitmap`
+0000000000000000
+0LLLLLLLLLLLLLL0
+0LLLLLLLLLLLLLL0
+0LL4444444444LL0
+0LL4DDDDDDDD4LL0
+0LL4DDDDDDDD4LL0
+0LL4DDDDDDDD4LL0
+0LL4DDDDDDDD4LL0
+0LL4DDDDDDDD4LL0
+0LL4DDDDDDDD4LL0
+0LL4DDDDDDDD4LL0
+0LL4DDDDDDDD4LL0
+0LL4444444444LL0
+0LLLLLLLLLLLLLL0
+0LLLLLLLLLLLLLL0
+0000000000000000` ],
 )
 
 setMap(levels[level])
@@ -310,11 +418,11 @@ setBackground(background)
 
 // Set collisions
 setSolids([player, enemy, enemy2, enemy3, enemy4,
-           wall, box, smallBox])
+           wall, box, smallBox, switchblue])
 
 setPushables({
   [player]: [box, smallBox],
-  [enemy]: [smallBox],
+  [enemy]:  [smallBox],
   [enemy2]: [smallBox],
   [enemy3]: [smallBox],
   [enemy4]: [smallBox],
@@ -472,6 +580,26 @@ afterInput(() => {
     coinTile.remove()
     collectedCoins += 1
     drawGameText()
+  }
+
+  // Handle opening gates with buttons
+  const blue  = getTile(x, y).find(({type}) => type === buttonblue),
+        red   = getTile(x, y).find(({type}) => type === buttonred),
+        green = getTile(x, y).find(({type}) => type === buttongreen);
+
+  if (blue) {
+    blue.remove()
+    getFirst(switchblue).remove()
+  }
+
+  if (red) {
+    red.remove()
+    getFirst(switchred).remove()
+  }
+
+  if (green) {
+    green.remove()
+    getFirst(switchgreen).remove()
   }
 
   // Switch levels ONLY if the player didn't die the
